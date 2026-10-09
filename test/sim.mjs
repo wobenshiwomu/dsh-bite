@@ -101,7 +101,7 @@ function makeSession(id, events, header = {}) {
   return { id, header, snapshotEvents: () => events }
 }
 
-function makeEnv({ maxPins = 12, maxPinChars = 2000, storageDir = null } = {}) {
+function makeEnv({ maxPins = 12, maxPinChars = 0, storageDir = null } = {}) {
   const dir = storageDir ?? fs.mkdtempSync(path.join(os.tmpdir(), 'bite-sim-'))
   const handlers = {}
   const commands = []
@@ -245,6 +245,22 @@ async function main() {
 
     assert.equal(env.rt._extractTurn(EVENTS, '不存在的id'), null)
     ok('不存在的 messageId → null')
+
+    // 默认 maxPinChars=0：完整保留，不截断
+    const envFull = makeEnv()
+    const longText = `很长的回复『${'鲸'.repeat(3000)}』`
+    const evLong = {
+      type: 'assistant/message',
+      seq: 99,
+      data: { turn: 9, step: 1, message: { role: 'assistant', content: [{ type: 'text', text: longText }], id: 'a-long' } },
+    }
+    const tFull = envFull.rt._extractTurn([...EVENTS, evLong], 'a-long')
+    assert.equal(tFull.assistantText, longText)
+    ok('默认 maxPinChars=0：回复原文完整保留（3000+ 字符不截断）')
+    envFull.rt._pinTurn({ sessionId: 'SLONG', assistantMessageId: 'a-long', events: [...EVENTS, evLong] })
+    const storedLong = envFull.rt._pinsOf('SLONG')[0]
+    assert.equal(storedLong.assistantText.length, longText.length)
+    ok('落盘也是完整原文')
   }
 
   // ── ② 钉子存储 ─────────────────────────────────────────────────────────

@@ -42,7 +42,7 @@ export const inject = ['commands']
 
 export const Config = Schema.object({
   maxPins: Schema.number().default(12).description('每个会话最多钉子数：超出后丢最旧的一条（并在响应里提示）'),
-  maxPinChars: Schema.number().default(2000).description('每条钉子的字符预算（用户原话 40% / 回复 60%，超出截断加省略号）'),
+  maxPinChars: Schema.number().default(0).description('每条钉子的字符预算：0=完整保留原文（默认）；>0=按预算截断（用户原话 40% / 回复 60%）'),
   storageDir: Schema.string().default('').description('钉子存储目录（默认 $DSH_HOME/storages/dsh-bite）'),
 })
 
@@ -147,8 +147,10 @@ export function createBite({ ctx, config, deps = {} }) {
    */
   function extractTurn(events, assistantMessageId) {
     if (!Array.isArray(events)) return null
-    const userBudget = Math.max(1, Math.floor(config.maxPinChars * 0.4))
-    const assistantBudget = Math.max(1, config.maxPinChars - userBudget)
+    // maxPinChars: 0（默认）= 完整保留原文，不截断；>0 才按预算截断
+    const limit = Number.isFinite(config.maxPinChars) && config.maxPinChars > 0 ? Math.floor(config.maxPinChars) : 0
+    const userBudget = limit > 0 ? Math.max(1, Math.floor(limit * 0.4)) : 0
+    const assistantBudget = limit > 0 ? Math.max(1, limit - userBudget) : 0
 
     let targetIndex = -1
     let targetMessage = null
@@ -185,8 +187,8 @@ export function createBite({ ctx, config, deps = {} }) {
     }
 
     return {
-      userText: truncate(userText, userBudget),
-      assistantText: truncate(messageText(targetMessage), assistantBudget),
+      userText: limit > 0 ? truncate(userText, userBudget) : userText,
+      assistantText: limit > 0 ? truncate(messageText(targetMessage), assistantBudget) : messageText(targetMessage),
     }
   }
 

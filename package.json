@@ -1,6 +1,6 @@
 {
   "name": "dsh-bite",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DeepSeek Harness 插件：咬钩 —— 用户钉住的关键回合（提问+回复打包）在上下文压缩后自动找回重注入，压缩也带不走；Web UI 点钉子按钮有肥鱼掠食动画",
   "keywords": [
     "dsh",
