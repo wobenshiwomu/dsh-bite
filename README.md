@@ -1,5 +1,7 @@
 # dsh-bite
 
+[![DSH Market](https://raw.githubusercontent.com/2BingLing/dsh-market/master/assets/readme/badge-listed-zh.svg)](https://dsh.market/)
+
 > DeepSeek Harness 插件：**咬钩 —— 钉住的内容，压缩也带不走。**
 > 上下文压缩（compaction）会把聊过的东西揉成一团摘要，被压掉的原文模型就再也看不见了。
 > dsh-bite 让你把关键回合"钉住"：压缩之后，自动把钉子内容打捞回来、重新塞回模型眼前。
